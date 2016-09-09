@@ -31,7 +31,7 @@ class BaseAPI(object):
         self.end_point = 'api.packet.net'
         self._log = logging.getLogger(__name__)
 
-    def call_api(self, method, type='GET', params=None):
+    def call_api(self, method, type='GET', params=None):  # pragma: no cover
         if params is None:
             params = {}
 
@@ -47,6 +47,7 @@ class BaseAPI(object):
                         (type, url, params, headers_str))
         try:
             if type == 'GET':
+                url = url + '%s' % self._parse_params(params)
                 resp = requests.get(url, headers=headers)
             elif type == 'POST':
                 resp = requests.post(url, headers=headers,
@@ -58,7 +59,7 @@ class BaseAPI(object):
                                       data=json.dumps(params))
             else:
                 raise Error(
-                    'method type not recognizes as one of GET, POST, DELETE or PATCH: %s' % type
+                    'method type not recognized as one of GET, POST, DELETE or PATCH: %s' % type
                 )
         except requests.exceptions.RequestException as e:
             raise Error('Communcations error: %s' % str(e), e)
@@ -95,3 +96,9 @@ class BaseAPI(object):
         except (KeyError, IndexError):
             pass
         return data
+
+    def _parse_params(self, params):  # pragma: no cover
+        vals = list()
+        for k, v in params.items():
+            vals.append(str("%s=%s" % (k, v)))
+        return "?" + "&".join(vals)
